@@ -91,12 +91,13 @@ export function FunnelChartPanel({ config, filter }: FunnelChartPanelProps) {
             // Extract pageName from previous step event name (e.g., "View_Home" -> "Home")
             const prevPageName = prevStepName.replace(/^View_/, '')
             
-            // Count valid current step events (after earliest prev step, within time window, and refer matches)
+            // Count valid current step events (after earliest prev step, within time window, and refer matches OR refer is null)
             const validStepEvents = stepEvents.filter((currEvent) => {
               const currTime = new Date(currEvent.timestamp).getTime()
               const isAfterPrev = currTime > earliestPrevTime
               const isWithinWindow = currTime - earliestPrevTime <= timeWindowMs
-              const hasValidRefer = currEvent.refer === prevPageName
+              // Accept if refer matches previous page OR if refer is null/undefined (old data without refer)
+              const hasValidRefer = currEvent.refer === prevPageName || !currEvent.refer
               
               return isAfterPrev && isWithinWindow && hasValidRefer
             })
