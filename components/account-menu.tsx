@@ -56,13 +56,24 @@ export function AccountMenu() {
       
       console.log("[v0] Sign up response:", { error, user: data.user })
       
-      if (error) throw error
+      if (error) {
+        if (error.message.includes("already") || error.message.includes("exists")) {
+          setError(
+            "This email is already registered but cannot login. " +
+            "Please go to Supabase Dashboard → Authentication → Users, " +
+            "find your email, and either: 1) Manually confirm it, OR 2) Delete it and sign up again."
+          )
+        } else {
+          setError(error.message)
+        }
+        throw error
+      }
       
       if (data.user && !data.session) {
         setSuccessMessage(
-          "Account created! To login, you need to disable email confirmation in Supabase: " +
-          "Go to Supabase Dashboard → Authentication → Providers → Email → Disable 'Confirm Email'. " +
-          "Then you can login directly without email verification."
+          "Account created but requires email confirmation. " +
+          "To disable this: Go to Supabase Dashboard → Authentication → Providers → Email → Disable 'Confirm Email'. " +
+          "Then delete your account and sign up again."
         )
         console.log("[v0] Email confirmation required for:", email)
       } else if (data.session) {
@@ -87,7 +98,7 @@ export function AccountMenu() {
       setPassword("")
     } catch (error: unknown) {
       console.error("[v0] Sign up error:", error)
-      setError(error instanceof Error ? error.message : "An error occurred")
+      // Error already set above
     } finally {
       setIsLoading(false)
     }
@@ -110,18 +121,17 @@ export function AccountMenu() {
       console.log("[v0] Login response:", { error, session: data.session })
       
       if (error) {
-        if (error.message.includes("Invalid login credentials")) {
-          throw new Error(
-            "Login failed. This could be due to:\n\n" +
-            "1. Incorrect password\n" +
-            "2. Account created before disabling email confirmation\n\n" +
-            "If you just disabled email confirmation in Supabase, you need to:\n" +
-            "• Go to Supabase Dashboard → Authentication → Users\n" +
-            "• Find your email and click to edit\n" +
-            "• Manually confirm the email, OR delete the user and sign up again"
+        console.error("[v0] Login error:", error)
+        if (error.message.includes("Invalid") || error.message.includes("credentials")) {
+          setError(
+            "Login failed. Your account may be unconfirmed. " +
+            "Go to Supabase Dashboard → Authentication → Users, " +
+            "find your email, and either: 1) Manually confirm it, OR 2) Delete it and sign up again with email confirmation disabled."
           )
+        } else {
+          setError(error.message)
         }
-        throw error
+        return
       }
       
       const sid = localStorage.getItem("analytics_session_id")
@@ -137,12 +147,13 @@ export function AccountMenu() {
       }
       
       console.log("[v0] Login completed successfully")
+      setSuccessMessage("Logged in successfully!")
       setShowAuth(null)
       setEmail("")
       setPassword("")
     } catch (error: unknown) {
       console.error("[v0] Login error:", error)
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -206,6 +217,7 @@ export function AccountMenu() {
                     onClick={() => {
                       setShowAuth(null)
                       setError(null)
+                      setSuccessMessage(null)
                     }}
                     className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
                   >
@@ -233,9 +245,13 @@ export function AccountMenu() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && (
+                  <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {error}
+                  </div>
+                )}
                 {successMessage && (
-                  <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800 whitespace-pre-wrap">
+                  <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
                     {successMessage}
                   </div>
                 )}
@@ -246,7 +262,11 @@ export function AccountMenu() {
                   Already have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => setShowAuth("login")}
+                    onClick={() => {
+                      setShowAuth("login")
+                      setError(null)
+                      setSuccessMessage(null)
+                    }}
                     className="text-[var(--color-accent-blue)] hover:underline"
                   >
                     Login
@@ -264,6 +284,7 @@ export function AccountMenu() {
                     onClick={() => {
                       setShowAuth(null)
                       setError(null)
+                      setSuccessMessage(null)
                     }}
                     className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
                   >
@@ -291,9 +312,13 @@ export function AccountMenu() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && (
+                  <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {error}
+                  </div>
+                )}
                 {successMessage && (
-                  <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800 whitespace-pre-wrap">
+                  <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
                     {successMessage}
                   </div>
                 )}
@@ -304,7 +329,11 @@ export function AccountMenu() {
                   Don't have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => setShowAuth("signup")}
+                    onClick={() => {
+                      setShowAuth("signup")
+                      setError(null)
+                      setSuccessMessage(null)
+                    }}
                     className="text-[var(--color-accent-blue)] hover:underline"
                   >
                     Sign Up
