@@ -241,14 +241,15 @@ class Tracker {
       })
 
       if (!response.ok) {
-        console.error("[v0] Failed to send events:", response.statusText)
+        const errorText = await response.text()
+        console.error("[v0] Failed to send events:", response.status, response.statusText, errorText)
         // 失敗時重新加入隊列
         this.eventQueue.unshift(...events)
       } else {
         console.log("[v0] Events sent successfully")
       }
     } catch (error) {
-      console.error("[v0] Error sending events:", error)
+      console.error("[v0] Error sending events:", error instanceof Error ? error.message : String(error), error)
       // 失敗時重新加入隊列
       this.eventQueue.unshift(...events)
     }

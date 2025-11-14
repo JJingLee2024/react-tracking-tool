@@ -31,7 +31,7 @@ export default function Home() {
                   View Dashboard
                 </Button>
               </Link>
-              <Link href="/admin/analytics">
+              <Link href="/admin/dashboards">
                 <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
                   Advanced Analytics
                 </Button>

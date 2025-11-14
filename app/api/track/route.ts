@@ -1,7 +1,5 @@
-import { createClient } from "@supabase/supabase-js"
-import { type NextRequest, NextResponse } from "next/server"
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+import { createClient } from '@supabase/supabase-js'
+import { type NextRequest, NextResponse } from 'next/server'
 
 function convertEventToSnakeCase(event: any) {
   return {
@@ -33,64 +31,83 @@ function convertEventToSnakeCase(event: any) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[v0] API /api/track called')
+
     const body = await request.json()
+    console.log('[v0] Request body parsed:', body)
 
     const { events } = body
 
     if (!events || !Array.isArray(events)) {
-      return NextResponse.json({ error: "Invalid request: events array is required" }, { status: 400 })
+      console.error('[v0] Invalid request: events not an array')
+      return NextResponse.json({ error: 'Invalid request: events array is required' }, { status: 400 })
     }
 
-    console.log("[v0] Received batch events:", events.length)
+    console.log('[v0] API received batch events:', events.length)
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    console.log('[v0] Supabase client created')
 
     const dbEvents = events.map(convertEventToSnakeCase)
 
-    // 批次插入所有事件
-    const { data, error } = await supabase.from("tracking_events").insert(dbEvents).select()
+    console.log('[v0] Inserting events into database...')
+
+    const { data, error } = await supabase.from('tracking_events').insert(dbEvents).select()
 
     if (error) {
-      console.error("[v0] Supabase error:", error)
+      console.error('[v0] Supabase insert error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // 更新 session 統計
-    const sessionIds = [...new Set(events.map((e: any) => e.sessionId))]
+    console.log('[v0] Events inserted successfully:', data?.length)
 
-    for (const sessionId of sessionIds) {
-      const sessionEvents = events.filter((e: any) => e.sessionId === sessionId)
-      const firstEvent = sessionEvents[0]
+    try {
+      const sessionIds = [...new Set(events.map((e: any) => e.sessionId))]
 
-      // 計算各類型事件數量
-      const views = sessionEvents.filter((e: any) => e.eventType === "view").length
-      const clicks = sessionEvents.filter((e: any) => e.eventType === "click").length
-      const exposes = sessionEvents.filter((e: any) => e.eventType === "expose").length
-      const disappears = sessionEvents.filter((e: any) => e.eventType === "disappear").length
+      for (const sessionId of sessionIds) {
+        const sessionEvents = events.filter((e: any) => e.sessionId === sessionId)
+        const firstEvent = sessionEvents[0]
 
-      await supabase.from("tracking_sessions").upsert(
-        {
-          id: sessionId,
-          user_id: firstEvent.userId,
-          company_id: firstEvent.companyId,
-          last_activity_at: new Date().toISOString(),
-          total_events: sessionEvents.length,
-          total_views: views,
-          total_clicks: clicks,
-          total_exposes: exposes,
-          total_disappears: disappears,
-          device_type: firstEvent.deviceType,
-          device_model: firstEvent.deviceModel,
-          os: firstEvent.os,
-          browser: firstEvent.browser,
-          entry_page: firstEvent.pageName,
-        },
-        {
-          onConflict: "id",
-          ignoreDuplicates: false,
-        },
-      )
+        const views = sessionEvents.filter((e: any) => e.eventType === 'view').length
+        const clicks = sessionEvents.filter((e: any) => e.eventType === 'click').length
+        const exposes = sessionEvents.filter((e: any) => e.eventType === 'expose').length
+        const disappears = sessionEvents.filter((e: any) => e.eventType === 'disappear').length
+
+        const { error: sessionError } = await supabase.from('tracking_sessions').upsert(
+          {
+            id: sessionId,
+            user_id: firstEvent.userId,
+            company_id: firstEvent.companyId,
+            last_activity_at: new Date().toISOString(),
+            total_events: sessionEvents.length,
+            total_views: views,
+            total_clicks: clicks,
+            total_exposes: exposes,
+            total_disappears: disappears,
+            device_type: firstEvent.deviceType,
+            device_model: firstEvent.deviceModel,
+            os: firstEvent.os,
+            browser: firstEvent.browser,
+            entry_page: firstEvent.pageName,
+          },
+          {
+            onConflict: 'id',
+            ignoreDuplicates: false,
+          }
+        )
+
+        if (sessionError) {
+          console.error('[v0] Session upsert error:', sessionError)
+        }
+      }
+    } catch (sessionError) {
+      console.error('[v0] Error updating sessions:', sessionError)
     }
 
-    console.log("[v0] Successfully saved", events.length, "events")
+    console.log('[v0] Successfully saved', events.length, 'events')
 
     return NextResponse.json({
       success: true,
@@ -98,7 +115,8 @@ export async function POST(request: NextRequest) {
       data,
     })
   } catch (error: any) {
-    console.error("[v0] Unexpected error:", error)
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 })
+    console.error('[v0] Unexpected error in /api/track:', error)
+    console.error('[v0] Error stack:', error.stack)
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }

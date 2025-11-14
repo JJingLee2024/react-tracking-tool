@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css"
 import { AnalyticsProvider } from "@/sdk/provider"
 import { AccountMenu } from "@/components/account-menu"
+import { HelpCenter } from "@/components/help-center"
+import { AuthRefreshHandler } from "@/components/auth-refresh-handler"
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -16,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "React Analytics Tracker",
   description: "Real-time event tracking and analytics dashboard",
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export const viewport: Viewport = {
@@ -34,6 +36,8 @@ export default function RootLayout({
         <div className="fixed top-4 right-4 z-50">
           <AccountMenu />
         </div>
+        <HelpCenter />
+        <AuthRefreshHandler />
         <AnalyticsProvider>{children}</AnalyticsProvider>
       </body>
     </html>

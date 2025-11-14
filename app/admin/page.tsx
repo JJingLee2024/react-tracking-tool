@@ -65,7 +65,7 @@ export default async function DashboardPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <h1 className="text-xl font-semibold">Analytics Dashboard</h1>
           <div className="flex gap-2">
-            <Link href="/admin/analytics">
+            <Link href="/admin/dashboards">
               <Button variant="outline" size="sm">
                 Advanced Analytics
               </Button>

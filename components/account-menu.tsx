@@ -124,12 +124,33 @@ export function AccountMenu() {
         console.error("[v0] Login error:", error)
         if (error.message.includes("Invalid") || error.message.includes("credentials")) {
           setError(
-            "Login failed. Your account may be unconfirmed. " +
-            "Go to Supabase Dashboard → Authentication → Users, " +
-            "find your email, and either: 1) Manually confirm it, OR 2) Delete it and sign up again with email confirmation disabled."
+            "Login Failed: Invalid Credentials\n\n" +
+            "This error occurs when:\n" +
+            "• Wrong password (most common)\n" +
+            "• Account exists but email is not confirmed\n\n" +
+            "📧 Fix Unconfirmed Account:\n" +
+            "1. Open: https://supabase.com/dashboard\n" +
+            "2. Select your project\n" +
+            "3. Go to: Authentication → Users\n" +
+            "4. Find: " + email + "\n" +
+            "5. Click the user row to edit\n" +
+            "6. Check: ✓ Email Confirmed\n" +
+            "7. Click: Save\n" +
+            "8. Return here and try logging in again\n\n" +
+            "Alternative: Delete the user and sign up again"
+          )
+        } else if (error.message.includes("Email not confirmed")) {
+          setError(
+            "Email Not Confirmed\n\n" +
+            "Your account exists but needs confirmation.\n\n" +
+            "Fix this in Supabase Dashboard:\n" +
+            "1. Go to: Authentication → Users\n" +
+            "2. Find: " + email + "\n" +
+            "3. Edit and check: ✓ Email Confirmed\n" +
+            "4. Save and try again"
           )
         } else {
-          setError(error.message)
+          setError("Login error: " + error.message)
         }
         return
       }
@@ -180,9 +201,15 @@ export function AccountMenu() {
           <div className="absolute right-0 top-12 z-50 w-80 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-lg">
             {!showAuth && (
               <>
-                <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                  <p className="text-xs text-[var(--color-muted)] mb-1">Session ID</p>
-                  <p className="text-sm font-mono break-all">{sessionId}</p>
+                <div className="mb-4 border-b border-[var(--color-border)] pb-4 space-y-3">
+                  <div>
+                    <p className="text-xs text-[var(--color-muted)] mb-1">Session ID</p>
+                    <p className="text-sm font-mono break-all">{sessionId}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-muted)] mb-1">User ID</p>
+                    <p className="text-sm font-medium">{user?.id || "Not logged in"}</p>
+                  </div>
                 </div>
 
                 {user ? (

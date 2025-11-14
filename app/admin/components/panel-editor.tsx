@@ -33,7 +33,7 @@ export function PanelEditor({ panel, onUpdate, onUpdateTitle, onClose }: PanelEd
   const hasChanges = pendingConfig !== null || localTitle !== panel.title
 
   return (
-    <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-[75vw] border-l border-[var(--color-border)] bg-[var(--color-surface-elevated)] overflow-y-auto">
+    <div className="fixed right-0 top-0 h-screen w-[50vw] border-l border-[var(--color-border)] bg-[var(--color-surface-elevated)] overflow-y-auto z-[60]">
       <div className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 flex-1">
