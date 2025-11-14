@@ -269,12 +269,12 @@ export default function TestPage() {
         {/* View Dashboard Link */}
         <div className="mt-8 text-center space-y-3">
           <div className="flex gap-3 justify-center">
-            <Link href="/dashboard">
+            <Link href="/admin">
               <Button size="lg" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)]">
                 查看儀表板
               </Button>
             </Link>
-            <Link href="/dashboard/live-log">
+            <Link href="/admin/live-log">
               <Button size="lg" variant="outline" className="border-[var(--color-border)] bg-transparent">
                 查看即時 Log
               </Button>

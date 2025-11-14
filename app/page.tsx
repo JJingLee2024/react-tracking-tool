@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Activity, BarChart3, Users, TrendingUp } from "lucide-react"
+import { Activity, BarChart3, Users, TrendingUp } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -29,6 +29,11 @@ export default function Home() {
               <Link href="/admin">
                 <Button size="lg" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)]">
                   View Dashboard
+                </Button>
+              </Link>
+              <Link href="/admin/analytics">
+                <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
+                  Advanced Analytics
                 </Button>
               </Link>
             </div>

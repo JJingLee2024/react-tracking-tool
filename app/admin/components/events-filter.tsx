@@ -1,11 +1,11 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
+import { X } from 'lucide-react'
 
 type EventsFilterProps = {
   eventNames: string[]
@@ -28,11 +28,11 @@ export function EventsFilter({ eventNames, currentFilters }: EventsFilterProps) 
     } else {
       params.delete(key)
     }
-    router.push(`/dashboard/events?${params.toString()}`)
+    router.push(`/admin/events?${params.toString()}`)
   }
 
   const clearFilters = () => {
-    router.push("/dashboard/events")
+    router.push("/admin/events")
   }
 
   const hasFilters = currentFilters.event || currentFilters.session || currentFilters.user || currentFilters.page

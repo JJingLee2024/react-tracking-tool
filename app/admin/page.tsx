@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/client"
 import { EventsTable } from "./components/events-table"
 import { SessionsTable } from "./components/sessions-table"
 import { StatsCards } from "./components/stats-cards"
@@ -6,7 +6,7 @@ import { EventChart } from "./components/event-chart"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+const supabase = createClient()
 
 async function getAnalyticsData() {
   // Get total events
@@ -64,11 +64,18 @@ export default async function DashboardPage() {
       <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <h1 className="text-xl font-semibold">Analytics Dashboard</h1>
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              Back to Home
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/analytics">
+              <Button variant="outline" size="sm">
+                Advanced Analytics
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -88,7 +95,7 @@ export default async function DashboardPage() {
           <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Recent Events</h2>
-              <Link href="/dashboard/events">
+              <Link href="/admin/events">
                 <Button variant="ghost" size="sm">
                   View All
                 </Button>
@@ -101,7 +108,7 @@ export default async function DashboardPage() {
           <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Recent Sessions</h2>
-              <Link href="/dashboard/sessions">
+              <Link href="/admin/sessions">
                 <Button variant="ghost" size="sm">
                   View All
                 </Button>

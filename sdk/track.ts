@@ -98,13 +98,20 @@ class Tracker {
   private trackPageChange() {
     if (typeof window === "undefined") return
 
-    // 記錄當前頁面為參考頁
     const updatePage = () => {
-      this.referPage = this.currentPage
-      this.currentPage = window.location.pathname
+      const newPage = window.location.pathname
+      
+      // 只有當頁面真的改變時才更新
+      if (newPage !== this.currentPage) {
+        this.referPage = this.currentPage // 將當前頁面記錄為上一頁
+        this.currentPage = newPage // 更新當前頁面
+        
+        console.log("[v0] Page changed from", this.referPage, "to", this.currentPage)
+      }
     }
 
-    updatePage()
+    // 初始化當前頁面（首次載入時沒有 refer）
+    this.currentPage = window.location.pathname
 
     // 監聽路由變化（針對 SPA）
     const originalPushState = history.pushState

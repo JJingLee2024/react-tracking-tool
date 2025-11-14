@@ -1,0 +1,130 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+
+type TrendChartEditorProps = {
+  config: any
+  onChange: (config: any) => void
+}
+
+export function TrendChartEditor({ config, onChange }: TrendChartEditorProps) {
+  const [localConfig, setLocalConfig] = useState(config)
+
+  useEffect(() => {
+    onChange(localConfig)
+  }, [localConfig])
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <h3 className="mb-3 text-sm font-semibold">Data Filters</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-2 block text-xs text-[var(--color-muted)]">Filter by Email</label>
+            <input
+              type="text"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm"
+              placeholder="user@example.com"
+              value={localConfig.filter?.email || ""}
+              onChange={(e) =>
+                setLocalConfig({
+                  ...localConfig,
+                  filter: { ...localConfig.filter, email: e.target.value },
+                })
+              }
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-xs text-[var(--color-muted)]">Filter by Session ID</label>
+            <input
+              type="text"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm"
+              placeholder="session_123456789"
+              value={localConfig.filter?.sessionId || ""}
+              onChange={(e) =>
+                setLocalConfig({
+                  ...localConfig,
+                  filter: { ...localConfig.filter, sessionId: e.target.value },
+                })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium">Event Names (comma-separated)</label>
+        <input
+          type="text"
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          placeholder="e.g., Click_Home_Button, View_Home_Page"
+          value={localConfig.eventNames?.join(", ") || ""}
+          onChange={(e) =>
+            setLocalConfig({
+              ...localConfig,
+              eventNames: e.target.value.split(",").map((s) => s.trim()),
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium">Metric Type</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.metricType || "count"}
+          onChange={(e) => setLocalConfig({ ...localConfig, metricType: e.target.value })}
+        >
+          <option value="count">Event Count</option>
+          <option value="average">Property Average</option>
+          <option value="sum">Property Sum</option>
+        </select>
+      </div>
+
+      {(localConfig.metricType === "average" || localConfig.metricType === "sum") && (
+        <div>
+          <label className="mb-2 block text-sm font-medium">Property Name</label>
+          <input
+            type="text"
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+            placeholder="e.g., duration, price, quantity"
+            value={localConfig.propertyName || ""}
+            onChange={(e) => setLocalConfig({ ...localConfig, propertyName: e.target.value })}
+          />
+          <p className="mt-1 text-xs text-[var(--color-muted)]">
+            The property must exist in the event's custom properties
+          </p>
+        </div>
+      )}
+
+      <div>
+        <label className="mb-2 block text-sm font-medium">Time Range</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.timeRange}
+          onChange={(e) => setLocalConfig({ ...localConfig, timeRange: e.target.value })}
+        >
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium">Interval</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.interval}
+          onChange={(e) => setLocalConfig({ ...localConfig, interval: e.target.value })}
+        >
+          <option value="hour">Hourly</option>
+          <option value="day">Daily</option>
+          <option value="week">Weekly</option>
+        </select>
+      </div>
+
+      {/* Removed Apply button */}
+    </div>
+  )
+}
