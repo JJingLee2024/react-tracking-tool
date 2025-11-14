@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Page, Button as TrackButton, Element } from "@/sdk/track"
 import { TrackedButton, TrackedElement } from "@/sdk/components"
 import Link from "next/link"
-import { ArrowLeft, Zap, MousePointer, Eye, EyeOff, KeyboardIcon } from "lucide-react"
+import { ArrowLeft, Zap, MousePointer, Eye, EyeOff, KeyboardIcon, Home } from 'lucide-react'
 
 export default function TestPage() {
   const [customEventName, setCustomEventName] = useState("")
@@ -60,7 +60,7 @@ export default function TestPage() {
             href="/"
             className="inline-flex items-center gap-2 text-sm text-[var(--color-muted)] hover:text-[var(--color-foreground)] mb-4"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <Home className="h-4 w-4" />
             返回首頁
           </Link>
           <h1 className="text-3xl font-bold text-balance">埋點測試頁面</h1>

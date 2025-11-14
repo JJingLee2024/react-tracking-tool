@@ -92,11 +92,17 @@ Content-Type: application/json
 
 ### 檔案結構
 
+**重要說明**: 由於 Next.js 的限制，API route 必須放在 `app/api/` 目錄下才能正常運作。
+
 \`\`\`
-services/log/
-└── api/
-    └── route.ts      # Next.js API Route Handler
+app/api/track/
+└── route.ts      # Next.js API Route Handler (實際位置)
+
+services/log/     # 文件和架構說明目錄
+└── README.md
 \`\`\`
+
+雖然此服務在邏輯上屬於 Log Service，但實作檔案必須位於 `app/api/track/route.ts`。
 
 ### 處理流程
 

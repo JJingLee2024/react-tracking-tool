@@ -3,7 +3,7 @@ import { EventsFilter } from "../components/events-filter"
 import { EventsTable } from "../components/events-table"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Home } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -56,7 +56,12 @@ export default async function EventsPage({
       <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard">
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <Home className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/admin">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4" />
               </Button>

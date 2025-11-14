@@ -5,9 +5,8 @@ import { createClient } from "@supabase/supabase-js"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { formatDistanceToNow } from "date-fns"
-import { zhTW } from "date-fns/locale"
-import { Play, Pause, RefreshCw } from "lucide-react"
+import { Play, Pause, RefreshCw, Home } from 'lucide-react'
+import Link from "next/link"
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -44,6 +43,16 @@ const eventTypeLabels = {
   disappear: "消失",
 }
 
+function getRelativeTime(date: Date): string {
+  const now = new Date()
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diff < 60) return `${diff} 秒前`
+  if (diff < 3600) return `${Math.floor(diff / 60)} 分鐘前`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} 小時前`
+  return `${Math.floor(diff / 86400)} 天前`
+}
+
 export default function LiveLogPage() {
   const [events, setEvents] = useState<TrackingEvent[]>([])
   const [isLive, setIsLive] = useState(true)
@@ -52,6 +61,7 @@ export default function LiveLogPage() {
 
   // 獲取最新事件
   const fetchEvents = async () => {
+    console.log("[v0] Fetching events from Supabase...")
     const { data, error } = await supabase
       .from("tracking_events")
       .select("*")
@@ -64,27 +74,37 @@ export default function LiveLogPage() {
     }
 
     if (data) {
+      console.log("[v0] Fetched", data.length, "events")
       setEvents(data)
       setEventCount(data.length)
       setLastUpdate(new Date())
     }
   }
 
-  // 自動刷新（每 2 秒）
   useEffect(() => {
+    console.log("[v0] Live log mounted or isLive changed:", isLive)
     fetchEvents()
 
     if (isLive) {
-      const interval = setInterval(fetchEvents, 2000)
-      return () => clearInterval(interval)
+      console.log("[v0] Starting auto-refresh interval (2s)")
+      const interval = setInterval(() => {
+        console.log("[v0] Auto-refreshing...")
+        fetchEvents()
+      }, 2000)
+      return () => {
+        console.log("[v0] Clearing auto-refresh interval")
+        clearInterval(interval)
+      }
     }
   }, [isLive])
 
   const toggleLive = () => {
+    console.log("[v0] Toggling live mode:", !isLive)
     setIsLive(!isLive)
   }
 
   const manualRefresh = () => {
+    console.log("[v0] Manual refresh triggered")
     fetchEvents()
   }
 
@@ -93,17 +113,26 @@ export default function LiveLogPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         {/* 標題和控制 */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-balance text-3xl font-bold text-[#37352F]">Live Log 即時日誌</h1>
-            <p className="text-sm text-[#37352F]/60 mt-1">
-              即時監控追蹤事件
-              {isLive && " · 每 2 秒自動刷新"}
-            </p>
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-[#37352F]/60 hover:text-[#37352F]">
+                <Home className="h-4 w-4 mr-2" />
+                返回首頁
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-[#E9E9E7]" />
+            <div>
+              <h1 className="text-balance text-3xl font-bold text-[#37352F]">Live Log 即時日誌</h1>
+              <p className="text-sm text-[#37352F]/60 mt-1">
+                即時監控追蹤事件
+                {isLive && " · 每 2 秒自動刷新"}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-sm text-[#37352F]/50">
-              最後更新: {formatDistanceToNow(lastUpdate, { addSuffix: true, locale: zhTW })}
+              最後更新: {getRelativeTime(lastUpdate)}
             </div>
 
             <Button variant="outline" size="sm" onClick={manualRefresh} disabled={isLive}>
@@ -226,10 +255,7 @@ export default function LiveLogPage() {
                     {/* 時間戳 */}
                     <div className="text-right">
                       <div className="text-xs text-[#37352F]/60 font-medium">
-                        {formatDistanceToNow(new Date(event.timestamp), {
-                          addSuffix: true,
-                          locale: zhTW,
-                        })}
+                        {getRelativeTime(new Date(event.timestamp))}
                       </div>
                       <div className="text-xs text-[#37352F]/40 mt-1">
                         {new Date(event.timestamp).toLocaleTimeString("zh-TW")}
