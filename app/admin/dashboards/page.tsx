@@ -190,7 +190,9 @@ export default function DashboardsPage() {
       console.error("[v0] Error creating dashboard:", error.message || error)
       alert(`Failed to create dashboard: ${error.message || 'Unknown error'}`)
     } else {
-      window.location.href = `/admin/analytics?analytics_id=${data.id}`
+      if (typeof window !== 'undefined') {
+        window.location.href = `/admin/analytics?analytics_id=${data.id}`
+      }
     }
   }
 

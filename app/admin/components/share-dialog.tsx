@@ -14,12 +14,16 @@ type ShareDialogProps = {
 
 export function ShareDialog({ open, onClose, dashboardId, visibility }: ShareDialogProps) {
   const [copied, setCopied] = useState(false)
-  const shareUrl = `${window.location.origin}/admin/analytics?analytics_id=${dashboardId}`
+  const shareUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/admin/analytics?analytics_id=${dashboardId}`
+    : ''
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (typeof navigator !== 'undefined') {
+      navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   if (!open) return null

@@ -18,7 +18,7 @@ interface EventGroup {
 
 export function HelpCenter() {
   const [isDragging, setIsDragging] = useState(false)
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: window.innerWidth - 80, y: window.innerHeight / 2 })
+  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [dockPosition, setDockPosition] = useState<Position>("right")
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"events">("events")
@@ -26,9 +26,17 @@ export function HelpCenter() {
   const [eventGroups, setEventGroups] = useState<EventGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [hasDragged, setHasDragged] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   
   const dragStartPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const fabRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    setIsClient(true)
+    if (typeof window !== 'undefined') {
+      setPosition({ x: window.innerWidth - 80, y: window.innerHeight / 2 })
+    }
+  }, [])
 
   useEffect(() => {
     if (isOpen && activeTab === "events") {
@@ -107,6 +115,8 @@ export function HelpCenter() {
     
     if (!hasDragged) return
     
+    if (typeof window === 'undefined') return
+    
     const windowWidth = window.innerWidth
     const snapThreshold = windowWidth / 2
     
@@ -147,7 +157,7 @@ export function HelpCenter() {
   }
 
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging && typeof window !== 'undefined') {
       window.addEventListener("mousemove", handleMouseMove)
       window.addEventListener("mouseup", handleMouseUp)
       
@@ -169,6 +179,8 @@ export function HelpCenter() {
     
     return pageMatch || eventMatch
   })
+
+  if (!isClient) return null
 
   return (
     <>

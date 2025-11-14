@@ -174,6 +174,8 @@ export default function DashboardPage() {
       const panelElement = panelRefs.current[editingPanel]
       if (!panelElement) return
 
+      if (typeof window === 'undefined') return
+
       // Get panel position and dimensions
       const panelRect = panelElement.getBoundingClientRect()
       const mainRect = mainRef.current.getBoundingClientRect()

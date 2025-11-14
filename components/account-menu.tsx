@@ -20,7 +20,9 @@ export function AccountMenu() {
   const supabase = createClient()
 
   useEffect(() => {
-    const sid = localStorage.getItem("analytics_session_id") || "No session"
+    const sid = typeof window !== 'undefined' 
+      ? (localStorage.getItem("analytics_session_id") || "No session")
+      : "No session"
     setSessionId(sid)
 
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -50,7 +52,8 @@ export function AccountMenu() {
         password,
         options: {
           emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}`,
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || 
+            (typeof window !== 'undefined' ? window.location.origin : ''),
         },
       })
       
@@ -77,7 +80,7 @@ export function AccountMenu() {
         )
         console.log("[v0] Email confirmation required for:", email)
       } else if (data.session) {
-        const sid = localStorage.getItem("analytics_session_id")
+        const sid = typeof window !== 'undefined' ? localStorage.getItem("analytics_session_id") : null
         console.log("[v0] Session ID for binding:", sid)
         
         if (sid && data.user) {
@@ -89,6 +92,7 @@ export function AccountMenu() {
           console.log("[v0] Dashboard binding result:", { error: updateError })
         }
         
+        console.log("[v0] Sign up completed successfully")
         setSuccessMessage("Account created and logged in successfully!")
         setShowAuth(null)
       }
@@ -155,7 +159,7 @@ export function AccountMenu() {
         return
       }
       
-      const sid = localStorage.getItem("analytics_session_id")
+      const sid = typeof window !== 'undefined' ? localStorage.getItem("analytics_session_id") : null
       console.log("[v0] Session ID for binding:", sid)
       
       if (sid && data.user) {

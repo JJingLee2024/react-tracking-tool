@@ -46,8 +46,10 @@ class Tracker {
 
   private constructor() {
     this.sessionId = this.getOrCreateSessionId()
-    this.initAutoTracking()
-    this.startQueueTimer()
+    if (typeof window !== "undefined") {
+      this.initAutoTracking()
+      this.startQueueTimer()
+    }
   }
 
   static getInstance(): Tracker {
@@ -70,6 +72,9 @@ class Tracker {
     if (!sessionId) {
       sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       sessionStorage.setItem("tracker_session_id", sessionId)
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("analytics_session_id", sessionId)
     }
     return sessionId
   }
@@ -202,7 +207,7 @@ class Tracker {
 
   // 獲取網路資訊
   private getNetworkInfo() {
-    if (typeof window === "undefined" || !("connection" in navigator)) {
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !("connection" in navigator)) {
       return {}
     }
 
@@ -377,23 +382,33 @@ class Tracker {
   }
 }
 
-// 導出單例實例
-const tracker = typeof window !== "undefined" ? Tracker.getInstance() : null
+let trackerInstance: Tracker | null = null
+
+const getTracker = (): Tracker | null => {
+  if (typeof window === "undefined") return null
+  if (!trackerInstance) {
+    trackerInstance = Tracker.getInstance()
+  }
+  return trackerInstance
+}
 
 // 導出便捷函數
 export const configure = (config: TrackingConfig) => {
-  tracker?.configure(config)
+  getTracker()?.configure(config)
 }
 
 export const Page = (pageName?: string) => {
+  const tracker = getTracker()
   return tracker?.Page(pageName) || { view: () => {}, name: () => ({ view: () => {} }) }
 }
 
 export const Button = (buttonName?: string) => {
+  const tracker = getTracker()
   return tracker?.Button(buttonName) || { click: () => {}, name: () => ({ click: () => {} }) }
 }
 
 export const Element = (elementName?: string) => {
+  const tracker = getTracker()
   return (
     tracker?.Element(elementName) || {
       expose: () => {},
@@ -404,11 +419,9 @@ export const Element = (elementName?: string) => {
 }
 
 export const track = (eventType: EventType, eventName: string, properties?: Record<string, any>) => {
-  tracker?.track(eventType, eventName, properties)
+  getTracker()?.track(eventType, eventName, properties)
 }
 
 export const flush = () => {
-  tracker?.flush()
+  getTracker()?.flush()
 }
-
-export default tracker

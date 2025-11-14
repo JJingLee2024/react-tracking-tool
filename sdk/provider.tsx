@@ -12,6 +12,8 @@ interface AnalyticsProviderProps {
 
 export function AnalyticsProvider({ children, userId, companyId }: AnalyticsProviderProps) {
   useEffect(() => {
+    if (typeof window === "undefined") return
+    
     const supabase = createClient()
     
     // Get initial session

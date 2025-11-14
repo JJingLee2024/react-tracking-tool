@@ -2,10 +2,28 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css"
-import { AnalyticsProvider } from "@/sdk/provider"
-import { AccountMenu } from "@/components/account-menu"
-import { HelpCenter } from "@/components/help-center"
-import { AuthRefreshHandler } from "@/components/auth-refresh-handler"
+import { ClientOnly } from "@/components/client-only"
+import dynamic from 'next/dynamic'
+
+const AnalyticsProvider = dynamic(
+  () => import("@/sdk/provider").then(mod => ({ default: mod.AnalyticsProvider })),
+  { ssr: false }
+)
+
+const AccountMenu = dynamic(
+  () => import("@/components/account-menu").then(mod => ({ default: mod.AccountMenu })),
+  { ssr: false }
+)
+
+const HelpCenter = dynamic(
+  () => import("@/components/help-center").then(mod => ({ default: mod.HelpCenter })),
+  { ssr: false }
+)
+
+const AuthRefreshHandler = dynamic(
+  () => import("@/components/auth-refresh-handler").then(mod => ({ default: mod.AuthRefreshHandler })),
+  { ssr: false }
+)
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -33,12 +51,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.className} ${geistMono.className}`}>
       <body className="antialiased">
-        <div className="fixed top-4 right-4 z-50">
-          <AccountMenu />
-        </div>
-        <HelpCenter />
-        <AuthRefreshHandler />
-        <AnalyticsProvider>{children}</AnalyticsProvider>
+        <ClientOnly>
+          <div className="fixed top-4 right-4 z-50">
+            <AccountMenu />
+          </div>
+          <HelpCenter />
+          <AuthRefreshHandler />
+          <AnalyticsProvider>{children}</AnalyticsProvider>
+        </ClientOnly>
       </body>
     </html>
   )
