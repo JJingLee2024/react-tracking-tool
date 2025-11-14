@@ -54,6 +54,21 @@ export function TrendChartEditor({ config, onChange }: TrendChartEditorProps) {
       </div>
 
       <div>
+        <label className="mb-2 block text-sm font-medium">Count Mode</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.countMode || "unique"}
+          onChange={(e) => setLocalConfig({ ...localConfig, countMode: e.target.value })}
+        >
+          <option value="unique">Unique User Count</option>
+          <option value="total">Total Event Count</option>
+        </select>
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          Choose whether to count unique users or total number of events (only applies when Metric Type is "Event Count")
+        </p>
+      </div>
+
+      <div>
         <label className="mb-2 block text-sm font-medium">Event Names (comma-separated)</label>
         <input
           type="text"
@@ -123,8 +138,6 @@ export function TrendChartEditor({ config, onChange }: TrendChartEditorProps) {
           <option value="week">Weekly</option>
         </select>
       </div>
-
-      {/* Removed Apply button */}
     </div>
   )
 }

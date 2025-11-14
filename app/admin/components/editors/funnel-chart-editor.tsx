@@ -72,6 +72,21 @@ export function FunnelChartEditor({ config, onChange }: FunnelChartEditorProps) 
       </div>
 
       <div>
+        <label className="mb-2 block text-sm font-medium">Count Mode</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.countMode || "unique"}
+          onChange={(e) => setLocalConfig({ ...localConfig, countMode: e.target.value })}
+        >
+          <option value="unique">Unique User Count</option>
+          <option value="total">Total Event Count</option>
+        </select>
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          Unique: Count each user once per step. Total: Count all events regardless of user
+        </p>
+      </div>
+
+      <div>
         <label className="mb-2 block text-sm font-medium">Funnel Steps</label>
         <div className="space-y-2">
           {(localConfig.steps || []).map((step: string, index: number) => (

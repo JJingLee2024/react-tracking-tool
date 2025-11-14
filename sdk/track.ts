@@ -271,13 +271,15 @@ class Tracker {
     const deviceInfo = this.getDeviceInfo()
     const networkInfo = this.getNetworkInfo()
 
+    const referPageName = this.referPage ? this.cleanPageName(this.referPage) : undefined
+
     return {
       eventType,
       eventName,
       pageName,
       componentName,
       timestamp: new Date().toISOString(),
-      refer: this.referPage || undefined,
+      refer: referPageName, // Now stores the cleaned page name (e.g., "Home", "AdminDashboards")
       userId: this.config.userId,
       companyId: this.config.companyId,
       sessionId: this.sessionId,

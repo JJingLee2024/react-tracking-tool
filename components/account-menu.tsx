@@ -190,7 +190,7 @@ export function AccountMenu() {
   }
 
   return (
-    <div className="relative">
+    <div className="fixed top-4 right-4 z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-accent-blue)] text-white hover:opacity-80 transition-opacity"

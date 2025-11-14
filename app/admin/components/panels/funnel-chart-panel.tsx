@@ -23,9 +23,11 @@ export function FunnelChartPanel({ config, filter }: FunnelChartPanelProps) {
         return
       }
 
+      const countMode = config.countMode || "unique" // default to unique users
+
       let query = supabase
         .from("tracking_events")
-        .select("user_id, event_name, timestamp, session_id")
+        .select("user_id, event_name, timestamp, session_id, refer, page_name")
         .order("timestamp", { ascending: true })
 
       if (activeFilter.sessionId) {
@@ -53,6 +55,7 @@ export function FunnelChartPanel({ config, filter }: FunnelChartPanelProps) {
       })
 
       console.log("[v0] FunnelPanel tracking", Object.keys(userEvents).length, "unique users")
+      console.log("[v0] FunnelPanel count mode:", countMode)
 
       const timeWindowMs = (config.timeWindow || 7) * 24 * 60 * 60 * 1000
       const stepCounts: number[] = []
@@ -66,35 +69,52 @@ export function FunnelChartPanel({ config, filter }: FunnelChartPanelProps) {
           const stepEvents = userEventList.filter((e) => e.event_name === stepName)
 
           if (stepIndex === 0) {
+            // First step
             if (stepEvents.length > 0) {
-              count++
+              if (countMode === "total") {
+                count += stepEvents.length // Count all events
+              } else {
+                count++ // Count unique users only
+              }
               usersCompleted.add(userId)
             }
           } else {
+            // Subsequent steps
             const prevStepName = config.steps[stepIndex - 1]
             const prevStepEvents = userEventList.filter((e) => e.event_name === prevStepName)
 
-            for (const prevEvent of prevStepEvents) {
-              const prevTime = new Date(prevEvent.timestamp).getTime()
+            if (prevStepEvents.length === 0) return // No previous step, skip this user
 
-              // Check if current step happened after previous step within time window
-              const validStepEvent = stepEvents.find((currEvent) => {
-                const currTime = new Date(currEvent.timestamp).getTime()
-                return currTime > prevTime && currTime - prevTime <= timeWindowMs
-              })
+            // Find the earliest time of the previous step
+            const earliestPrevTime = Math.min(...prevStepEvents.map(e => new Date(e.timestamp).getTime()))
 
-              if (validStepEvent) {
-                usersCompleted.add(userId)
-                count++
-                break // Count each user only once
+            // Extract pageName from previous step event name (e.g., "View_Home" -> "Home")
+            const prevPageName = prevStepName.replace(/^View_/, '')
+            
+            // Count valid current step events (after earliest prev step, within time window, and refer matches)
+            const validStepEvents = stepEvents.filter((currEvent) => {
+              const currTime = new Date(currEvent.timestamp).getTime()
+              const isAfterPrev = currTime > earliestPrevTime
+              const isWithinWindow = currTime - earliestPrevTime <= timeWindowMs
+              const hasValidRefer = currEvent.refer === prevPageName
+              
+              return isAfterPrev && isWithinWindow && hasValidRefer
+            })
+
+            if (validStepEvents.length > 0) {
+              if (countMode === "total") {
+                count += validStepEvents.length // Count all valid events
+              } else {
+                count++ // Count unique users only
               }
+              usersCompleted.add(userId)
             }
           }
         })
 
         stepCounts.push(count)
         stepDetails.push({ step: stepName, count, users: Array.from(usersCompleted) })
-        console.log(`[v0] FunnelPanel step ${stepIndex + 1} (${stepName}):`, count, "users")
+        console.log(`[v0] FunnelPanel step ${stepIndex + 1} (${stepName}):`, count, countMode === "total" ? "events" : "users")
       })
 
       const result = config.steps.map((step: string, index: number) => ({

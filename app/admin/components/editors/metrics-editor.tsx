@@ -70,6 +70,21 @@ export function MetricsEditor({ config, onChange }: MetricsEditorProps) {
       </div>
 
       <div>
+        <label className="mb-2 block text-sm font-medium">Count Mode</label>
+        <select
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          value={localConfig.countMode || "unique"}
+          onChange={(e) => setLocalConfig({ ...localConfig, countMode: e.target.value })}
+        >
+          <option value="unique">Unique User Count</option>
+          <option value="total">Total Event Count</option>
+        </select>
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          Only applies when Metric Type is "Event Count"
+        </p>
+      </div>
+
+      <div>
         <label className="mb-2 block text-sm font-medium">Metric Type</label>
         <select
           className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"

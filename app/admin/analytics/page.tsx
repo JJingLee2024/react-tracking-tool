@@ -144,7 +144,7 @@ export default function DashboardPage() {
           .select("*")
           .eq("dashboard_id", dashboardId)
           .eq("user_id", user.id)
-          .single()
+          .maybeSingle()
 
         setIsFavorite(!!fav)
       }

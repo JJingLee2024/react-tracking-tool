@@ -33,6 +33,8 @@ export default function DashboardsPage() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       
+      console.log("[v0] Dashboards page - Current user:", user?.email, "User ID:", user?.id)
+      
       if (user) {
         setUserId(user.id)
         setUserEmail(user.email || null)
@@ -42,6 +44,7 @@ export default function DashboardsPage() {
   }, [])
 
   useEffect(() => {
+    console.log("[v0] Dashboards page - userId:", userId, "activeTab:", activeTab)
     if (userId !== null) {
       loadDashboards(activeTab)
     } else {
@@ -50,9 +53,11 @@ export default function DashboardsPage() {
   }, [userId, userEmail, activeTab])
 
   const loadDashboards = async (tab: Tab) => {
+    console.log("[v0] Loading dashboards for tab:", tab, "userId:", userId, "userEmail:", userEmail)
     setIsLoading(true)
     
     if (!userId && tab !== "explore") {
+      console.log("[v0] No userId and not explore tab, returning empty")
       setDashboards([])
       setIsLoading(false)
       return
@@ -67,6 +72,7 @@ export default function DashboardsPage() {
         return
       }
 
+      console.log("[v0] Querying created dashboards for userId:", userId)
       query = supabase
         .from("analytics_dashboards")
         .select("*")
@@ -130,6 +136,7 @@ export default function DashboardsPage() {
         .in("id", dashboardIds)
         .order("updated_at", { ascending: false })
     } else {
+      console.log("[v0] Querying all public dashboards for explore tab")
       query = supabase
         .from("analytics_dashboards")
         .select("*")
@@ -139,6 +146,21 @@ export default function DashboardsPage() {
 
     const { data, error } = await query
 
+    console.log("[v0] Dashboard query result - data count:", data?.length || 0, "error:", error)
+    
+    if (data && data.length > 0) {
+      console.log("[v0] Dashboard details:")
+      data.forEach((d, index) => {
+        console.log(`[v0]   Dashboard ${index + 1}:`, {
+          id: d.id,
+          title: d.title,
+          creator_id: d.creator_id,
+          creator_email: d.creator_email,
+          visibility: d.visibility,
+        })
+      })
+    }
+    
     if (error) {
       console.error("[v0] Error loading dashboards:", error)
       setDashboards([])
