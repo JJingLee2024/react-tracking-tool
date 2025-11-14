@@ -6,9 +6,11 @@ import { EventChart } from "./components/event-chart"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-const supabase = createClient()
+export const dynamic = 'force-dynamic'
 
 async function getAnalyticsData() {
+  const supabase = createClient()
+  
   // Get total events
   const { count: totalEvents } = await supabase.from("tracking_events").select("*", { count: "exact", head: true })
 
