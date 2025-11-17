@@ -7,27 +7,28 @@
 ### 核心特性
 
 - **鏈式 API 設計**: `Page().name("Home").view()`, `Button().name("Submit").click()`
-- **四種事件類型**: View（頁面瀏覽）, Click（點擊）, Expose（曝光）, Disappear（消失）
+- **四種事件類型**: View（頁面瀏覽）、Click（點擊）、Expose（曝光）、Disappear（消失）
 - **自動命名規範**: `[Type]_[PageName]_[ComponentName]` 格式
 - **批次發送機制**: 每 15 秒或 session 結束時批次發送，優化效能
-- **自動資料收集**: 設備、網路、頁面資訊自動收集
+- **自動資料收集**: 設備、網路、頁面資訊自動收集，包含 `refer` 欄位記錄上一頁
 - **React 整合**: 提供 Hooks 和組件實現自動追蹤
 - **即時監控**: Live Log 每 2 秒刷新，實時查看事件
 - **完整管理後台**: 儀表板、事件列表、Session 管理
-- **進階分析功能**: 自訂儀表板、圖表配置、拖拽排序
+- **進階分析功能**: 自訂儀表板、圖表配置、拖拽排序、帳戶系統
+- **儀表板管理**: 多儀表板支持、權限管理、協作編輯、公開分享
 
 ### 技術規格
 
 **前端 SDK**:
 - TypeScript
-- React 18+ / Next.js 15+
+- React 18+ / Next.js 16+
 - 批次隊列管理
 - Intersection Observer API（曝光追蹤）
 - LocalStorage（Session 持久化）
 
 **後端服務**:
 - Next.js API Routes
-- Supabase PostgreSQL
+- Supabase PostgreSQL（含 Auth）
 - 批次寫入優化
 - camelCase ↔ snake_case 轉換
 
@@ -36,6 +37,7 @@
 - SWR 資料刷新
 - Recharts 視覺化
 - shadcn/ui 組件庫
+- 拖拽排序（HTML5 Drag & Drop）
 
 ## 📁 專案結構
 
@@ -56,12 +58,17 @@
 │   ├── live-log/page.tsx         # 即時日誌（每 2 秒刷新）
 │   ├── events/page.tsx           # 事件列表（篩選、搜尋）
 │   ├── sessions/page.tsx         # Session 管理
-│   ├── analytics/                # 新增進階分析功能
-│   │   ├── page.tsx              # 自訂儀表板
+│   ├── analytics/                # 進階分析
+│   │   ├── page.tsx              # 自訂儀表板頁面
 │   │   └── README.md             # 進階分析文件
+│   ├── dashboards/               # 儀表板管理
+│   │   ├── page.tsx              # 儀表板列表（Your/Shared/Favorites/Explore）
+│   │   └── README.md             # 儀表板管理文件
 │   ├── components/               # 儀表板組件
 │   │   ├── editors/              # 各類型圖表編輯器
-│   │   └── panels/               # 各類型圖表面板
+│   │   ├── panels/               # 各類型圖表面板
+│   │   ├── permissions-dialog.tsx  # 權限管理對話框
+│   │   └── share-dialog.tsx      # 分享對話框
 │   └── README.md                 # 管理後台文件
 │
 ├── app/demo/                     # Demo - 測試頁面
@@ -72,16 +79,24 @@
 │   └── route.ts                  # 事件接收 API
 │
 ├── components/                   # 共用組件
-│   └── account-menu.tsx          # 帳戶管理選單
+│   ├── account-menu.tsx          # 帳戶管理選單（註冊/登入/登出）
+│   ├── help-center.tsx           # 全局幫助中心
+│   └── auth-refresh-handler.tsx  # 認證刷新處理器
 │
 ├── lib/supabase/                 # Supabase 客戶端
-│   └── client.ts                 # 單例客戶端
+│   └── client.ts                 # 單例客戶端（SSR 安全）
 │
 ├── scripts/                      # 資料庫 SQL 腳本
 │   ├── 001_create_tracking_tables.sql
 │   ├── 002_create_analytics_views.sql
 │   ├── 005_redesign_tracking_schema.sql
-│   └── 006_create_analytics_dashboards.sql  # 新增
+│   ├── 006_create_analytics_dashboards.sql
+│   ├── 007_add_dashboard_permissions.sql
+│   ├── 008_add_creator_email_to_dashboards.sql
+│   └── 009_make_session_id_nullable.sql
+│
+├── docs/                         # 文件目錄
+│   └── API.md                    # 完整 API 文件
 │
 └── README.md                     # 本檔案
 \`\`\`
@@ -93,9 +108,12 @@
 執行 SQL 腳本建立資料表：
 
 \`\`\`bash
-# 在 Supabase SQL Editor 中執行
+# 在 Supabase SQL Editor 中依序執行
 scripts/005_redesign_tracking_schema.sql
 scripts/006_create_analytics_dashboards.sql
+scripts/007_add_dashboard_permissions.sql
+scripts/008_add_creator_email_to_dashboards.sql
+scripts/009_make_session_id_nullable.sql
 \`\`\`
 
 ### 2. 環境變數
@@ -103,6 +121,8 @@ scripts/006_create_analytics_dashboards.sql
 \`\`\`env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000
 \`\`\`
 
 ### 3. 安裝與使用
@@ -146,7 +166,9 @@ Element().name("ProductCard").expose()
 - **[Log Service 文件](services/log/README.md)**: API 規格、資料流程、效能優化
 - **[管理後台文件](app/admin/README.md)**: 功能說明、組件架構、自訂指南
 - **[進階分析文件](app/admin/analytics/README.md)**: 自訂儀表板、圖表配置、拖拽排序
+- **[儀表板管理文件](app/admin/dashboards/README.md)**: 多儀表板、權限管理、協作編輯
 - **[測試頁面文件](app/demo/README.md)**: 測試流程、除錯技巧、常見問題
+- **[API 文件](docs/API.md)**: 完整 API 規格、資料庫 Schema、SDK API
 
 ## 🎯 使用範例
 

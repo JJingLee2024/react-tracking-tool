@@ -155,6 +155,16 @@ export function TrendChartPanel({ config, filter }: TrendChartPanelProps) {
 
   const allLabels = Array.from(new Set(series.flatMap(s => s.data.map(d => d.label)))).sort()
 
+  const getXPosition = (index: number, total: number): number => {
+    if (total <= 1) return 200 // Center if only one point
+    return (index / (total - 1)) * 400
+  }
+
+  const getYPosition = (value: number): number => {
+    if (!isFinite(value) || !isFinite(maxValue) || maxValue === 0) return 64 // Center vertically if invalid
+    return 128 - (value / maxValue) * 128
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs text-[var(--color-muted)]">
@@ -201,12 +211,12 @@ export function TrendChartPanel({ config, filter }: TrendChartPanelProps) {
                 key={`area-${seriesIndex}`}
                 d={(() => {
                   const points = displayData.map((d, i, arr) => {
-                    const x = (i / (arr.length - 1)) * 400
-                    const y = 128 - (d.value / maxValue) * 128
+                    const x = getXPosition(i, arr.length)
+                    const y = getYPosition(d.value)
                     return `${x},${y}`
                   })
-                  const firstX = 0
-                  const lastX = 400
+                  const firstX = displayData.length <= 1 ? 200 : 0
+                  const lastX = displayData.length <= 1 ? 200 : 400
                   return `M ${firstX},128 L ${points[0]} ${points.map((p, i) => (i === 0 ? `L ${p}` : `L ${p}`)).join(" ")} L ${lastX},128 Z`
                 })()}
                 fill={s.color}
@@ -225,8 +235,8 @@ export function TrendChartPanel({ config, filter }: TrendChartPanelProps) {
                 key={`line-${seriesIndex}`}
                 points={displayData
                   .map((d, i, arr) => {
-                    const x = (i / (arr.length - 1)) * 400
-                    const y = 128 - (d.value / maxValue) * 128
+                    const x = getXPosition(i, arr.length)
+                    const y = getYPosition(d.value)
                     return `${x},${y}`
                   })
                   .join(" ")}
@@ -247,8 +257,8 @@ export function TrendChartPanel({ config, filter }: TrendChartPanelProps) {
             return (
               <g key={`points-${seriesIndex}`}>
                 {displayData.map((d, i, arr) => {
-                  const x = (i / (arr.length - 1)) * 400
-                  const y = 128 - (d.value / maxValue) * 128
+                  const x = getXPosition(i, arr.length)
+                  const y = getYPosition(d.value)
                   return (
                     <g key={`${seriesIndex}-${i}`}>
                       <circle
